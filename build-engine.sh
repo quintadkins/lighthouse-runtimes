@@ -52,12 +52,19 @@ echo "== Packages ($PLATFORM) =="
 # packages that can never match). The true mac dependency set
 # is small and listed here; the verifier below proves the
 # closure is complete for a macOS environment.
+# Two runtime needs are NOT in any package metadata, found the
+# hard way on a real Mac (2026-11-05): demucs shells out to
+# ffmpeg/ffprobe (the app puts its bundled copies on PATH),
+# and torchaudio saves WAVs through the soundfile package
+# (declared by nothing), so soundfile + its cffi chain are
+# listed explicitly even though the verifier cannot see them.
 python3 -m pip install --quiet --target "$OUT/site-packages" \
   --platform "$PLATFORM" --python-version 3.11 --implementation cp --abi cp311 \
   --only-binary=:all: --find-links wheelhouse --no-deps \
   "$TORCH" "$TORCHAUDIO" "demucs==4.0.1" "numpy==1.26.4" \
   filelock "typing-extensions>=4.8.0" networkx jinja2 MarkupSafe fsspec \
-  "sympy==1.13.1" mpmath "pyyaml>=5.5" tqdm "julius>=0.2.3" "lameenc>=1.2" dora-search einops openunmix omegaconf retrying submitit treetable antlr4-python3-runtime cloudpickle
+  "sympy==1.13.1" mpmath "pyyaml>=5.5" tqdm "julius>=0.2.3" "lameenc>=1.2" dora-search einops openunmix omegaconf retrying submitit treetable antlr4-python3-runtime cloudpickle \
+  "soundfile==0.13.1" cffi pycparser
 
 echo "== Verify dependency closure for macOS =="
 python3 - "$OUT/site-packages" "$ARCH" <<'VERIFY'
